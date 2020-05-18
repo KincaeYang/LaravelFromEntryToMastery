@@ -74,7 +74,7 @@ Route::get('/', function(){	});
 
 
 
-> 路由命名
+## 路由命名
 
 
 
@@ -105,5 +105,100 @@ Route::get('user/{id?}', function ($id = 1) {
 ```php
 url 		中填写的是路径
 route 		中填写的是路由名称
+```
+
+
+
+
+
+## 路由分组
+
+> 通常将具有某些共同特征的路由进行分组，这些特征包括是否需要认证、是否具有共同的路由前缀或者子域名、以及是否具有相同的控制器命名空间等
+
+
+
+```php
+# 路由认证
+Route::middleware('auth')->group(function(){
+	
+	Route::get('dashboard',function(){
+		return view('dashboard');
+	});
+	
+	Route::get('account', function () {
+        return view('account');
+    });
+    
+});
+
+# 多个中间件的操作方式
+Route::middleware(['auth','another'])->group(function () {
+    Route::get('dashboard', function () {
+        return view('dashboard');
+    });
+    Route::get('account', function () {
+        return view('account');
+    });
+});
+```
+
+
+
+> 路由路径前缀
+
+
+
+```php
+# 路由拥有共同的路径前缀，可以使用 Route::prefix 为这个分组路由指定路径前缀并对其进行分组
+
+Route::prefix('api')->group(function () {
+    
+    Route::get('/', function () {
+        
+    })->name('api.index');
+    
+    Route::get('users', function () {
+        
+    })->name('api.users');
+});	
+```
+
+
+
+> 子命名空间
+
+
+
+```php
+# 默认的命名空间是 App\Http\Controllers；假设方法在这个控制器中 App\Http\Controllers\Admin\AdminController
+
+
+Route::namespace('Admin')->group(function() {
+     
+     Route::get('/admin', 'AdminController@index');
+});
+```
+
+
+
+
+
+> 路由命名前缀（路由命名+路径前缀）
+
+```php
+Route::name('user.')->prefix('user')->group(function () {
+    
+    Route::get('{id?}', function ($id = 1) {
+        
+        
+        return route('user.show');			// 处理 /user/{id} 路由，路由命名为 user.show
+    })->name('show');
+    
+    
+    Route::get('posts', function () {
+        
+        
+    })->name('posts');					    // 处理 /user/posts 路由，路由命名为 user.posts
+});
 ```
 
