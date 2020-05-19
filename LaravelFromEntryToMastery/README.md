@@ -1,8 +1,8 @@
 # Laravel
 
+# 路由  
 
 
-## 路由
 
 >  捕获任何方式的路由
 
@@ -170,7 +170,7 @@ Route::prefix('api')->group(function () {
 
 
 ```php
-# 默认的命名空间是 App\Http\Controllers；假设方法在这个控制器中 App\Http\Controllers\Admin\AdminController
+![控制器概述](C:\Users\yi\Desktop\控制器概述.png)# 默认的命名空间是 App\Http\Controllers；假设方法在这个控制器中 App\Http\Controllers\Admin\AdminController
 
 
 Route::namespace('Admin')->group(function() {
@@ -201,4 +201,206 @@ Route::name('user.')->prefix('user')->group(function () {
     })->name('posts');					    // 处理 /user/posts 路由，路由命名为 user.posts
 });
 ```
+
+
+
+# 控制器
+
+![控制器概述](C:\Users\yi\Desktop\控制器概述.png)
+
+
+
+`控制器概述`
+
+​	控制器的主要职责就是获取 HTTP 请求，进行一些简单处理（如验证）后将其传递给真正处理业务逻辑的职能部门，如 Service
+
+​	
+
+## 获取用户输入
+
+```php
+Route::get('task/create', 'TaskController@create');
+Route::post('task', 'TaskController@store');
+
+
+public function store(Request $request)
+{
+    $task = new Task();
+    $task->title = $request->input('title');
+    $task->description = $request->input('description');
+    $task->save();
+    return redirect('task');   // 重定向到 GET task 路由
+}
+
+# 这里我们用到了 Eloquent 模型类 Task 和重定向方法 redirect()，我们将用户提交数据收集起来，保存到 Task 模型类，然后将用户重定向到显示所有任务的页面。这里我们通过 $request 对象来获取用户输入，此外还可以通过 Input 门面 获取用户输入：
+$task->title = Input::get('title');
+
+# 注意
+# 门面仅仅是静态代理，底层调用的还是 $request->input 方法，建议用 $request 来获取。使用上述获取方式可以获取用户提供的任何输入数据，不管是查询字符串还是表单字段。
+```
+
+
+
+## **资源控制器方法列表**
+
+| HTTP请求方式 | URL            | 控制器方法 | 路由命名    | 业务逻辑描述                 |
+| ------------ | -------------- | ---------- | ----------- | ---------------------------- |
+| GET          | post           | index()    | post.index  | 展示所有文章                 |
+| GET          | post/create    | create()   | post.create | 发布文章表单页面             |
+| POST         | post           | store()    | post.store  | 获取表单提交数据并保存新文章 |
+| GET          | post/{post}    | show()     | post.show   | 展示单个文章                 |
+| GET          | post/{id}/edit | edit()     | post.edit   | 编辑文章表单页面             |
+| PUT          | post/{id}      | update()   | post.update | 获取编辑表单输入并更新文章   |
+| DELETE       | post/{id}      | destroy()  | post.desc   | 删除单个文章                 |
+
+
+
+## 路由模型绑定
+
+
+
+### 隐式绑定
+
+
+
+定义路由参数的时候，将参数设为唯一标识的变量（一般使用模型名称）。然后在闭包函数中，进行传入参数类型限制（依赖注入），这里的参数需要和路由中的参数名称保持一致。
+
+```php
+# 例子
+Route::get('task/{task}', function (\App\Models\Task $task) {
+    
+    dd($task); // 打印 $task 明细
+    
+});
+
+# laravel的底层默认传入的参数为模型Task的主键，查询获取对应模型实例，并将结果传递到闭包函数或控制器方法中。
+
+# 该例子参见 web.php22行
+```
+
+
+
+> 路由绑定默认传输的参数是主键，也可以手动在该模型内，进行修改。如下所示
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Task extends Model
+{
+    public function getRouteKeyName() {
+        return 'name';  // 以任务名称作为路由模型绑定查询字段
+    }
+}
+```
+
+
+
+### 显示绑定
+
+
+
+> 显式绑定需要手动配置路由模型绑定，通常需要在 `App\Providers\RouteServiceProvider` 的 `boot()` 方法中新增如下这段配置代码：
+
+
+
+```php
+public function boot()
+{
+    // 显式路由模型绑定
+    Route::model('task_model', Task::class);
+
+    parent::boot();
+}
+```
+
+
+
+> 编写完这段代码后，以后每次访问包含 `{task_model}` 参数的路由时，路由解析器都会从请求 URL 中解析出模型 ID ，然后从对应模型类 `Task` 中获取相应的模型实例并传递给闭包函数或控制器方法：
+
+
+
+```php
+Route::get('task/model/{task_model}', function (\App\Models\Task $task) {
+    dd($task);
+});
+```
+
+
+
+### 兜底路由
+
+> 路由文件中定义的所有路由都无法匹配用户请求的 URL 时，用来处理用户请求的路由。使用兜底路由的好处是我们可以对这类请求进行统计并进行一些自定义的操作，比如重定向，或者一些友好的提示什么的
+
+```php
+# 兜底路由通过 Route::fallback 来定义
+    
+Route::fallback(function () {
+    return '我是最后的屏障';
+});   
+```
+
+
+
+### 频率限制
+
+> 在规定时间该用户对某个路由的访问次数限制
+
+
+
+使用场景：
+
+1.  某些需要认证的页面，限制用户失败的次数，提高系统的安全性
+
+ 	2. 避免非正常用户（比如爬虫）对路由的过度频繁访问，从而提高系统的可用性
+ 	3. 在流量高峰期还可以借助此功能进行有效的限流
+
+
+
+```php
+# 在 Laravel 中该功能通过内置的 throttle 中间件来实现，该中间件接收两个参数，第一个是次数上限，第二个是指定时间段（单位：分钟）
+Route::middleware('throttle:60,1')->group(function () {
+    Route::get('/user', function () {
+        //
+    });
+});
+
+# 以上路由的含义是一分钟能只能访问路由分组的内路由（如 /user）60 次，超过此限制会返回 429 状态码并提示请求过于频繁。
+```
+
+
+
+> 还可以通过模型属性来动态设置频率，例如，我们可以为上述通过 `throttle` 中间件进行分组的路由涉及到的模型类定义一个 `rate_limit` 属性，然后这样来动态定义这个路由：
+
+```php
+Route::middleware('throttle:rate_limit,1')->group(function () {
+    Route::get('/user', function () {
+        // 在 User 模型中设置自定义的 rate_limit 属性值
+    });
+    Route::get('/post', function () {
+        // 在 Post 模型中设置自定义的 rate_limit 属性值
+    });
+});
+
+# 代码参考web.php 26行
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

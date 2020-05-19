@@ -16,3 +16,18 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+
+//隐式路由绑定
+Route::get('/userinfo/{user_info}',function (\App\Models\user_info $user_info){
+    dd($user_info);
+});
+
+//频率限制
+Route::middleware('throttle:rate_limit,1')->group(function (){
+    Route::get('/user_info', function () {
+
+        return '789465465';
+        // 在 user_info 模型中设置自定义的 rate_limit 属性值
+    });
+});
