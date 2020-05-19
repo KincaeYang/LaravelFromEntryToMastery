@@ -23,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        view()->share('name','kincae');
+        view()->share('value','1021');
     }
 }

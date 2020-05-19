@@ -397,9 +397,25 @@ Route::middleware('throttle:rate_limit,1')->group(function () {
 > 如果路由执行的是写入操作，则需要传入一个隐藏的token字段，以避免  跨站请求伪造攻击  (CSRF)
 
 
+## 视图返回与参数传递
+
+```php
+    return view('home')->with('tasks', Task::all());
+    
+    # 或者（推荐使用后者，因为简单）
+    return view('home', ['tasks' => Task::all()]);
+```
 
 
+## 视图间共享变量
 
+> 在不同视图间传递同一个数据变量,通过视图对象提供的 share 方法实现，
+> 在某个服务提供者如 AppServiceProvider 的 boot 方法中定义共享的视图变量：
+
+```php
+    view()->share('siteName', 'Laravel学院');
+    view()->share('siteUrl', 'https://xueyuanjun.com');
+```
 
 
 

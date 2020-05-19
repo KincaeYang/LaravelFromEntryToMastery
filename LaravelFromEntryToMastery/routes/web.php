@@ -45,3 +45,9 @@ Route::get('task/{id}/delete', function ($id) {
 Route::delete('task/{id}', function ($id) {
     return 'Delete Task ' . $id;
 })->name('task.delete');
+
+
+Route::get('show',function (){
+
+    return view('show');
+});
