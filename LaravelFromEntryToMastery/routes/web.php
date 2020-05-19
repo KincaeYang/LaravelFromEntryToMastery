@@ -31,3 +31,17 @@ Route::middleware('throttle:rate_limit,1')->group(function (){
         // 在 user_info 模型中设置自定义的 rate_limit 属性值
     });
 });
+
+
+//csrf验证
+Route::get('task/{id}/delete', function ($id) {
+    return '<form method="post" action="' . route('task.delete', [$id]) . '">
+                <input type="hidden" name="_method" value="DELETE"> 
+                <input type="hidden" name="_token" value="' . csrf_token() . '">
+                <button type="submit">删除任务</button>
+            </form>';
+});
+
+Route::delete('task/{id}', function ($id) {
+    return 'Delete Task ' . $id;
+})->name('task.delete');

@@ -390,6 +390,12 @@ Route::middleware('throttle:rate_limit,1')->group(function () {
 
 
 
+## 跨站请求伪造
+
+
+
+> 如果路由执行的是写入操作，则需要传入一个隐藏的token字段，以避免  跨站请求伪造攻击  (CSRF)
+
 
 
 
