@@ -419,10 +419,140 @@ Route::middleware('throttle:rate_limit,1')->group(function () {
 
 
 
+# Blade模板
+
+Blade常见的三种语法：
+
+	1. 通过	{{	}}	渲染PHP变量
+ 	2. 通过    {!!   !!}    渲染原生HTML代码
+ 	3. 通过以@为前缀的Blade指令执行一些控制结构和继承、引入之类的操作
 
 
 
+列子：{{ $variable }} 	
+
+通过	{{	}}	包裹需要渲染的php变量。通过 `{{}}` 语法包裹渲染的 PHP 变量会通过 `htmlentities()` 方法进行 HTML 字符转义，从而避免类似 XSS 这种攻击，提高了代码的安全性
+
+所以 `{{ $variable }}` 编译后的最终代码是：
+
+```php
+<?php echo htmlentities($variable); ?>
+```
 
 
 
+某些情况下不能对变量中 HTML 字符进行转义，比如我们在表单通过富文本编辑器编辑后提交的表单数据，这种场景就需要通过 `{!! !!}` 来包裹待渲染数据了：
+
+```php
+{!! $variable !!}
+```
+
+
+
+如果要注释一段 PHP 代码，可以通过 `{{-- 注释内容 --}}` 实现。
+
+
+
+# 控制结构
+
+
+
+## @unless
+
+
+
+`@unless`是blade 提供的一个PHP中没有的语法
+
+```php
+@unless($boy)可以理解为	if(!$boy): 然后以@endunless收尾
+   
+例如    
+@unless ($user->hasPaid())
+		
+@endunless
+```
+
+
+
+## @switch
+
+
+
+```php
+@switch($i)
+    @case(1)
+        // $i = 1 做什么
+        @break
+
+    @case(2)
+        // $i = 2 做什么
+        @break
+
+    @default
+        // 默认情况下做什么
+@endswitch
+```
+
+
+
+## @循环
+
+
+
+```php
+// for 循环
+@for ($i = 0; $i < $talk->slotsCount(); $i++) 
+    The number is {{ $i }}<br> 
+@endfor
+
+// foreach 循环
+@foreach ($talks as $talk)
+    {{ $talk->title }} ({{ $talk->length }} 分钟)<br> 
+@endforeach
+
+// while 循环  
+@while ($item = array_pop($items)) 
+    {{ $item->orSomething() }}<br> 
+@endwhile
+```
+
+
+
+## @forelse
+
+```php
+<?php 
+if ($students) {
+    foreach ($students as $student) {
+       // do something ...
+    }
+} else {
+    // do something else ...
+}
+
+等价于：
+    
+@forelse ($students as $student)
+    // do something ...
+@empty
+    // do something else ...
+@endforelse    
+```
+
+
+
+## $loop
+
+在循环控制结构中，我们要重磅介绍的就是 Blade 模板为 `@foreach` 和 `@forelse` 循环结构提供的 `$loop` 变量了，通过该变量，我们可以在循环体中轻松访问该循环体的很多信息，而不用自己编写那些恼人的面条式代码，比如当前迭代索引、嵌套层级、元素总量、当前索引在循环中的位置等，`$loop` 实例上有以下属性可以直接访问：
+
+| 属性             | 描述                        |
+| ---------------- | --------------------------- |
+| $loop->index     | 当前循环迭代索引（从0开始） |
+| $loop->iteration | 当前循环迭代（从1开始）     |
+| $loop->remaining | 当前循环剩余的迭代          |
+| $loop->count     | 迭代数组元素的总数量        |
+| $loop->first     | 是否当前循环的第一个迭代    |
+| $loop->last      | 是否当前循环的最后一个迭代  |
+| $loop->depth     | 当前循环的嵌套层级          |
+| $loop->parent    | 嵌套循环中的父级循环变量    |
 
