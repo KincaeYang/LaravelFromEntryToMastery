@@ -51,3 +51,6 @@ Route::get('show',function (){
 
     return view('show');
 });
+
+Route::post('form','RequestController@form')->name('form.submit');
+Route::get('formArray','RequestController@formatArray');

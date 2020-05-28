@@ -556,3 +556,191 @@ if ($students) {
 | $loop->depth     | 当前循环的嵌套层级          |
 | $loop->parent    | 嵌套循环中的父级循环变量    |
 
+
+
+# 请求处理篇
+
+
+
+> 判断是否包含指定字段
+
+
+
+```php
+# exists 方法是 has 方法的别名，两者调用方式一样，功能完全等效。
+
+$id = $request->has('id') ? $request->get('id') : 0;
+
+
+# 获取指定字段的值，以及设置默认值
+
+$site = $request->input('site', 'Laravel学院');
+```
+
+
+
+## Laravel中request::input和get有什么区别？
+
+两个函数都可以用来接受值，但是有时候get会接受不到。推荐使用input()
+
+
+
+
+
+# 分页
+
+> 通过skip()和take()方法进行组合分页；skip表示从第几条数据开始，take表示一次获取多少条数据
+
+​	
+
+```php
+$post = DB::table()->orderBy()->where()->skip()->take()->get()
+```
+
+
+
+# 批量赋值、更新
+
+> 以数组的形式将需要设置的属性以关联数组的方式传递构造函数
+
+```php
+$post = new Post([
+    'title' => '测试文章标题', 
+    'content' => '测试文章内容'
+]);
+
+# 仅这么看的话，好像跟之前的写法没有什么大的优势，还是需要指定每个属性，但是这为我们提供了一个很好的基础，如果和用户请求数据结合起来使用，就能焕发它的光彩了。比如，如果我们的请求数据是一个文章发布表单提交过来的数据，包含 title、content 等字段信息，就可以通过下面这种方式进行批量赋值了：
+
+$post = new Post($request->all());
+
+# 更新模型类，也可以通过批量赋值的方式实现，只需在获取模型类后使用 fill 方法批量填充属性即可：
+$post = Post::findOrFail(11);
+$post->fill($request->all());
+$post->save();
+```
+
+
+
+# 白名单、黑名单
+
+
+
+**白名单**
+
+​	所谓白名单属性就是该属性中指定的字段才能应用批量赋值，不在白名单中的属性会被忽略
+
+
+
+**黑名单**
+
+​	黑名单属性指定的字段不会应用批量赋值，不在黑名单中的属性则会应用批量赋值
+
+```php
+/**
+ * 使用批量赋值的属性（白名单）
+ *
+ * @var array
+ */
+protected $fillable = [];
+
+/**
+ * 不使用批量赋值的字段（黑名单）
+ *
+ * @var array
+ */
+protected $guarded = ['*'];
+```
+
+
+
+# 软删除
+
+> 实现步骤
+
+```php
+# 创建迁移文件
+
+php artisan make:migration alter_posts_add_deleted_at --table=posts
+    
+# 在迁移文件中执行如下操作    
+<?php
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class AlterPostsAddDeletedAt extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::table('posts', function (Blueprint $table) {
+            //重点是这条
+            $table->softDeletes();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::table('posts', function (Blueprint $table) {
+            $table->dropColumn('deleted_at');
+        });
+    }
+}
+
+# 然后在模型类中做相应的修改
+<?php
+
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+//重点
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Post extends Model
+{
+    //重点
+    use SoftDeletes;
+
+    protected $guarded = ['user_id'];
+}
+
+
+# 开始删除；
+$post = Post::findOrFail(32);
+$post->delete();
+if ($post->trashed()) {
+    dump('该记录已删除');
+}
+
+
+# 在查询结果中出现软删除记录，可以通过在查询的时候调用 withTrashed 方法实现：
+$post = Post::withTrashed()->find(32);
+
+# 获取被软删的记录
+$post = Post::onlyTrashed()->where('views', 0)->get();
+
+# 如果是误删除的话，你可以 restore 方法来恢复软删除记录：
+$post->restore();   // 恢复单条记录
+Post::onlyTrashed()->where('views', 0)->restore(); // 恢复多条记录
+
+# 确实是想物理删除数据表记录，通过 forceDelete 方法删除即可：
+$post->forceDelete();
+```
+
+
+
+
+
+
+
