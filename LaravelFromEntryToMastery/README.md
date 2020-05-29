@@ -740,6 +740,25 @@ $post->forceDelete();
 
 
 
+# 访问器
+
+> 访问器用于从数据库获取指定数据，经过处理后再返回给调用方
+
+
+
+```PHP
+# 在对应的模型中设置属性
+
+public function getDisplayNameAttribute()
+{
+    return $this->nickname ? $this->nickname : $this->name;
+}
+
+# 设置好对应的属性后，只需要在控制器中调用实例化后的模型即可
+$user = new User();
+$user->display_level
+```
+
 
 
 

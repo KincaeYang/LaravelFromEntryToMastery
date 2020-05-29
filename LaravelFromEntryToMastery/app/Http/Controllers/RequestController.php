@@ -46,9 +46,24 @@ class RequestController extends Controller
 //        $dataArray = user_info::findOrFail(1);
 
         //获取软删除的方法
-        $dataArray = user_info::onlyTrashed()->get();
+//        $dataArray = user_info::onlyTrashed()->get();
 
-        return $dataArray;
+        //获取访问器的值
+//        $dataArray = new user_info();
+
+        $dataArray = user_info::find(2);
+        return $dataArray->display_mobile;
+
+
+
+        $dataArray->mobile = '18862523891';
+
+        if ($dataArray->save()){
+            return '保存成功';
+        }else{
+            return '保存失败';
+        }
+        //return $dataArray;
 
     }
 }
