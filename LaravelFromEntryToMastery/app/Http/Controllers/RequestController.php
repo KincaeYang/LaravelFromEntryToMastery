@@ -8,6 +8,7 @@ use App\Models\user_info;
 use Illuminate\Support\Facades\DB;
 use App\Models\Users;
 use App\Models\Tag;
+use App\Models\Country;
 
 class RequestController extends Controller
 {
@@ -59,19 +60,24 @@ class RequestController extends Controller
 //        $dataArray = Users::find(1);
 //        return $dataArray->tags;
 
-        $data = Tag::with('users')->get();
+//        $data = Tag::with('users')->get();
 //        $posts = $tag->posts;
 //        $data = Users::with('tags')->get();
-        return $data;
+//        return $data;
 //        return $dataArray->display_mobile;
 //        $dataArray->mobile = '18862523891';
 //
-        if ($dataArray->delete()){
-            return 'del成功';
-        }else{
-            return 'del失败';
-        }
+//        if ($dataArray->delete()){
+//            return 'del成功';
+//        }else{
+//            return 'del失败';
+//        }
         //return $dataArray;
 
+        //远程一对多
+        $data = Country::with('user_info')->find(1);
+
+
+        return $data;
     }
 }
