@@ -756,10 +756,64 @@ public function getDisplayNameAttribute()
 
 # 设置好对应的属性后，只需要在控制器中调用实例化后的模型即可
 $user = new User();
-$user->display_level
+$user->display_level;
 ```
 
 
 
 
+
+# ORM关联关系
+
+
+
+## 一对一
+
+
+
+> 一般用于主表与扩展表之间的关系
+
+
+
+ ```php
+#  一般hasOne定义在主表当中
+hasOne(关联模型类名，关联模型类所属表的外键，关联表的外键关联到当前模型所属表的哪个字段)
+    
+# belongsTo一般用在扩展表
+belongsTo(关联模型类名，当前模型类所属表的外键，关联模型所属表的主键，关联关系方法名)
+ ```
+
+
+
+## 一对多
+
+> 用户和文章表、用户和评论表
+
+
+
+```php
+# 与hasOne传的参数一样
+hasMany(关联模型类名，关联模型类所属表的外键，关联表的外键关联到当前模型所属表的哪个字段)
+    
+# 与一对一是一样的
+belongsTo(关联模型类名，当前模型类所属表的外键，关联模型所属表的主键，关联关系方法名)    
+```
+
+
+
+## 多对多
+
+
+
+```php
+public function belongsToMany(
+    $related, 					# 关联模型的类名
+    $table = null, 				# 对多对关系的中间表名
+    $foreignPivotKey = null,    # 当前模型在中间表中的外键
+    $relatedPivotKey = null, 	# 关联模型在中间表中的外键
+    $parentKey = null, 			# 当前模型在中间表中的外键对应自己表中的哪个字段，这里就写哪个
+    $relatedKey = null, 		# 关联模型在中间表中的外键对应自己表中的哪个字段，这里就写哪个
+    $relation = null			# 关联关系名称，用于设置查询结果中的关联属性，默认是关联方法名
+)
+```
 

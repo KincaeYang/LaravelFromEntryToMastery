@@ -2,13 +2,21 @@
 
 namespace App\Providers;
 
+use App\Listeners\UserInfoEventSubscriber;
+use App\Observers\UsersObserver;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
+use App\Models\Users;
 
 class EventServiceProvider extends ServiceProvider
 {
+
+    //注册监听的订阅者
+    protected $subscribe = [
+        UserInfoEventSubscriber::class
+    ];
     /**
      * The event listener mappings for the application.
      *
@@ -29,6 +37,7 @@ class EventServiceProvider extends ServiceProvider
     {
         parent::boot();
 
+        Users::observe(UsersObserver::class);
         //
     }
 }

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Http\Requests\SubmitFormRequest;
 use App\Models\user_info;
 use Illuminate\Support\Facades\DB;
+use App\Models\Users;
+use App\Models\Tag;
 
 class RequestController extends Controller
 {
@@ -51,17 +53,23 @@ class RequestController extends Controller
         //获取访问器的值
 //        $dataArray = new user_info();
 
-        $dataArray = user_info::find(2);
-        return $dataArray->display_mobile;
 
+//        $dataArray = user_info::find(2);
 
+//        $dataArray = Users::find(1);
+//        return $dataArray->tags;
 
-        $dataArray->mobile = '18862523891';
-
-        if ($dataArray->save()){
-            return '保存成功';
+        $data = Tag::with('users')->get();
+//        $posts = $tag->posts;
+//        $data = Users::with('tags')->get();
+        return $data;
+//        return $dataArray->display_mobile;
+//        $dataArray->mobile = '18862523891';
+//
+        if ($dataArray->delete()){
+            return 'del成功';
         }else{
-            return '保存失败';
+            return 'del失败';
         }
         //return $dataArray;
 
